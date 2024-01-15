@@ -35,8 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -64,15 +62,11 @@ class MainActivity : ComponentActivity() {
 
     private val CHANNEL_ID = "health_app_channel"
     private val NOTIFICATION_ID = 1
-    private val isSwipeDetected = mutableStateOf(false)
-    //private var isAppInForeground by mutableStateOf(true)
     private var navControllerState: MutableState<NavHostController?> = mutableStateOf(null)
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-       // val serviceIntent = Intent(this, BackgroundService::class.java)
-      //  startService(serviceIntent)
         val fromNotification = intent.getBooleanExtra("fromNotification", false)
         val userName = intent.getStringExtra("userName") ?: ""
 
@@ -206,7 +200,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
-private const val PERMISSION_REQUEST_CODE = 123
+
 private fun createNotificationChannel(channelId: String, context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val name = "Health App Channel"
@@ -262,7 +256,7 @@ fun JetpackComposeHealthApp(
             Text(text = "Start", color = Color.White)
         }
 
-        // Display a dialog with a list of users
+        // Displays a dialog with a list of users
         if (isDialogOpen) {
             navController.navigate("selectUser")
         }
@@ -289,18 +283,3 @@ private fun requestNotificationPermission(context: Context) {
         }
     }
 }
-private class AppLifecycleObserver(private val callback: (Boolean) -> Unit) :
-    DefaultLifecycleObserver {
-
-    override fun onPause(owner: LifecycleOwner) {
-        super.onPause(owner)
-        callback.invoke(false)
-    }
-
-    override fun onResume(owner: LifecycleOwner) {
-        super.onResume(owner)
-        callback.invoke(true)
-    }
-
-}
-

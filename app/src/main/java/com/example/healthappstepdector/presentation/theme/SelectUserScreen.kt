@@ -34,12 +34,12 @@ fun SelectUserScreen(navController: NavController, context: Context) {
     // Use remember to keep the state across recompositions
     val userListState: MutableState<List<UserData>> = remember { mutableStateOf(emptyList()) }
 
-    // Use LaunchedEffect to start a coroutine when the composable is first launched
+    // Uses LaunchedEffect to start a coroutine when the composable is first launched
     LaunchedEffect(true) {
-        // Load data asynchronously and update the state
+        // Loads data asynchronously and update the state
         withContext(Dispatchers.IO) {
             val loadedUserNames = readUserNamesFromExcel(context)
-            // Update the state using remember
+            // Updates the state using remember
             userListState.value = loadedUserNames
         }
     }
