@@ -28,23 +28,35 @@ import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-
+/**
+ * Composable function to display a screen for selecting a user.
+ *
+ * This screen fetches a list of users from an Excel file and displays them in a dropdown menu.
+ * When a user is selected from the dropdown, the screen navigates to the welcome screen of the selected user.
+ *
+ * @param navController The NavController for managing app navigation.
+ * @param context The Context where this screen is being displayed.
+ */
 @Composable
 fun SelectUserScreen(navController: NavController, context: Context) {
-    // Use remember to keep the state across recompositions
     val userListState: MutableState<List<UserData>> = remember { mutableStateOf(emptyList()) }
-
-    // Uses LaunchedEffect to start a coroutine when the composable is first launched
-    LaunchedEffect(true) {
-        // Loads data asynchronously and update the state
-        withContext(Dispatchers.IO) {
+     LaunchedEffect(true) {
+     withContext(Dispatchers.IO) {
             val loadedUserNames = readUserNamesFromExcel(context)
-            // Updates the state using remember
             userListState.value = loadedUserNames
         }
     }
     CustomDropdownMenu(userListState, navController)
 }
+/**
+ * Composable function to display a custom dropdown menu.
+ *
+ * This dropdown menu lists user names, allowing the user to select one.
+ * Once a user is selected, the function navigates to the corresponding welcome screen.
+ *
+ * @param userListState The state object containing the list of UserData objects to be displayed.
+ * @param navController The NavController for managing app navigation.
+ */
 
 @Composable
 fun CustomDropdownMenu(userListState: State<List<UserData>>, navController: NavController) {
@@ -75,6 +87,16 @@ fun CustomDropdownMenu(userListState: State<List<UserData>>, navController: NavC
         }
     }
 }
+/**
+ * Suspends execution to read user names from an Excel file and returns a list of UserData objects.
+ *
+ * This function opens an Excel file from the assets, reads user data row by row, and constructs a list of UserData objects.
+ * It is designed to be called from a coroutine due to its potentially time-consuming file reading operations.
+ *
+ * @param context The Context used to access application assets.
+ * @return A list of UserData objects representing users read from the Excel file.
+ * @throws Exception if there's an error reading the Excel file.
+ */
 private suspend fun readUserNamesFromExcel(context: Context): List<UserData> {
     val userList = mutableListOf<UserData>()
 

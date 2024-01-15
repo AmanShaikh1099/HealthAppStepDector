@@ -10,7 +10,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Scanner
-
+/**
+ * Writes a list of exercise sessions to a CSV file.
+ *
+ * This function saves exercise sessions data to a CSV file in the internal storage.
+ * If the file does not exist, it is created with a header. Existing data is appended to the file.
+ *
+ * @param context The current context used to access the application's internal storage directory.
+ * @param sessions A list of ExerciseSession objects to be written to the file.
+ */
 fun writeExerciseSessionsToCSV(context: Context, sessions: List<ExerciseSession>) {
     val fileName = "exercise_data.csv"
     val file = File(context.filesDir, fileName)
@@ -28,7 +36,16 @@ fun writeExerciseSessionsToCSV(context: Context, sessions: List<ExerciseSession>
         }
     }
 }
-
+/**
+ * Reads exercise sessions from a CSV file and returns a list of ExerciseSession objects.
+ *
+ * This function opens and reads a CSV file containing exercise session data.
+ * It constructs a list of ExerciseSession objects based on the data read from the file.
+ * Only the sessions matching today's date are added to the list.
+ *
+ * @param context The current context used to access the application's internal storage directory.
+ * @return A list of ExerciseSession objects read from the CSV file.
+ */
 
 fun readExerciseSessionsFromCSV(context: Context): List<ExerciseSession> {
     val fileName = "exercise_data.csv"

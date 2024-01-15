@@ -53,7 +53,12 @@ import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-
+/**
+* Composable function that displays a list of exercises with tutorials.
+*
+* @param navController The NavController to handle navigation.
+* @param userName The name of the user.
+*/
 @Composable
 fun ExercisesWithTutorials(navController: NavController,userName: String) {
     val scrollState = rememberScrollState()
@@ -90,6 +95,13 @@ fun ExercisesWithTutorials(navController: NavController,userName: String) {
         )
     }
 }
+/**
+* Composable function that displays an exercise GIF with Text-to-Speech (TTS) instructions.
+*
+* @param navController The NavController to handle navigation.
+* @param exerciseName The name of the exercise.
+* @param userName The name of the user.
+*/
 @Composable
 fun ExerciseGifWithTTS(navController: NavController, exerciseName: String,userName: String) {
     val context = LocalContext.current
@@ -204,7 +216,14 @@ fun ExerciseGifWithTTS(navController: NavController, exerciseName: String,userNa
     }
 
 
-
+/**
+ * Composable function that represents an exercise item.
+ *
+ * @param name The name of the exercise.
+ * @param drawableResId The resource ID of the exercise's icon.
+ * @param navController The NavController to handle navigation.
+ * @param userName The name of the user.
+ */
 @Composable
 fun ExerciseItem(name: String, drawableResId: Int, navController: NavController,userName: String) {
     Surface(
@@ -244,6 +263,12 @@ fun ExerciseItem(name: String, drawableResId: Int, navController: NavController,
         }
     }
 }
+/**
+ * Composable function that displays stretching exercise options.
+ *
+ * @param navController The NavController to handle navigation.
+ * @param userName The name of the user.
+ */
 @Composable
 fun StretchingOptions(navController: NavController,userName: String) {
     LazyColumn(
@@ -303,6 +328,13 @@ fun StretchingOptions(navController: NavController,userName: String) {
         }
     }
 }
+/**
+ * Composable function that displays exercise logs for till current day.
+ *
+ * @param navController The NavController to handle navigation.
+ * @param context The Android context.
+ * @param userName The name of the user.
+ */
 @Composable
 fun ExerciseLogsScreen(navController: NavController,context: Context, userName: String) {
     val exerciseLogs = remember { mutableStateOf<List<ExerciseSession>>(listOf()) }
@@ -353,6 +385,13 @@ fun ExerciseLogsScreen(navController: NavController,context: Context, userName: 
         )
     }
 }
+/**
+ * Composable function that displays exercise logs for the current day.
+ *
+ * @param navController The NavController to handle navigation.
+ * @param context The Android context.
+ * @param userName The name of the user.
+ */
 @Composable
 fun TodayExerciseLogsScreen(navController: NavController, context: Context, userName: String) {
     val exerciseLogs = remember { mutableStateOf<List<ExerciseSession>>(listOf()) }

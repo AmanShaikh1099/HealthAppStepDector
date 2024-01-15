@@ -59,6 +59,13 @@ import kotlinx.coroutines.delay
 
 
 const val ELEVATION_CHANGE_THRESHOLD = 1.5f // Define a threshold for significant elevation change
+/**
+ * Composable function to display exercise options and navigate to specific exercise tracking screens.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param exerciseType The type of exercise (e.g., "Chair Squats", "Walking", etc.).
+ * @param userName The name of the currently logged-in user.
+ */
 @Composable
 fun ExerciseWithTracking(navController: NavController, exerciseType: String,userName: String) {
 
@@ -73,6 +80,14 @@ fun ExerciseWithTracking(navController: NavController, exerciseType: String,user
     }
 }
 
+/**
+ * Composable function to display options for the walking exercise.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param context The current context.
+ * @param userName The name of the currently logged-in user.
+ * @param exerciseType The type of exercise (e.g., "Walking").
+ */
 @Composable
 fun WalkingExerciseOption(navController: NavController, context: Context, userName: String, exerciseType: String) {
     var showCustomDialog by remember { mutableStateOf(true) }
@@ -94,6 +109,15 @@ fun WalkingExerciseOption(navController: NavController, context: Context, userNa
     }
 }
 
+/**
+ * Composable function  to display a custom dialog for exercise options.
+ *
+ * @param onDismissRequest Callback when the dialog is dismissed.
+ * @param onConfirm Callback when "Yes" is clicked.
+ * @param onDismiss Callback when "No" is clicked.
+ * @param iconId Drawable resource ID for the icon.
+ * @param question The question to display in the dialog.
+ */
 @Composable
 fun CustomDialog(
     onDismissRequest: () -> Unit,
@@ -131,6 +155,14 @@ fun CustomDialog(
         }
     }
 }
+/**
+ *Composable function to track stretching exercise.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param context The current context.
+ * @param userName The name of the currently logged-in user.
+ * @param exerciseType The type of exercise (e.g., "Stretching").
+ */
 @Composable
 fun TrackStretch(navController: NavController, context: Context, userName: String, exerciseType: String) {
     val totalReps = 3
@@ -182,7 +214,11 @@ fun TrackStretch(navController: NavController, context: Context, userName: Strin
         }
     }
 }
-
+/**
+ * Function to vibrate the phone or any Wearable Devices.
+ *
+ * @param vibrator The Vibrator service.
+ */
 fun vibratePhone(vibrator: Vibrator) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -192,7 +228,14 @@ fun vibratePhone(vibrator: Vibrator) {
     }
 }
 
-
+/**
+ * Composable function  to track chair squats exercise.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param context The current context.
+ * @param userName The name of the currently logged-in user.
+ * @param exerciseType The type of exercise (e.g., "Chair Squats").
+ */
 
 @Composable
 fun TrackChairSquats(navController: NavController, context: Context, userName: String, exerciseType: String) {
@@ -292,6 +335,14 @@ fun TrackChairSquats(navController: NavController, context: Context, userName: S
         }
     }
 }
+/**
+ * Composable function  to display options for walking exercise.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param context The current context.
+ * @param userName The name of the currently logged-in user.
+ * @param exerciseType The type of exercise (e.g., "Walking").
+ */
 @Composable
 fun TrackWalking(navController: NavController, context: Context, userName: String, exerciseType: String) {
     val stepSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -377,6 +428,14 @@ fun TrackWalking(navController: NavController, context: Context, userName: Strin
         }
     }
 }
+/**
+ * Composable function  to display options for walking  with elevation exercise.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param context The current context.
+ * @param userName The name of the currently logged-in user.
+ * @param exerciseType The type of exercise (e.g., "Walking").
+ */
 @Composable
 fun TrackStepsWithElevation(navController: NavController, context: Context, userName: String, exerciseType: String) {
     // Sensor Manager

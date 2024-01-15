@@ -52,7 +52,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -97,12 +96,22 @@ import java.util.concurrent.TimeUnit
 
 
 
-// Constants
 private const val NOTIFICATION_CHANNEL_ID = "step_detector_channel"
 private const val PERMISSION_POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS"
 const val ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE = 123
 private const val YES_ACTION = "com.example.healthappstepdector.YES_ACTION"
 private const val NO_ACTION = "com.example.healthappstepdector.NO_ACTION"
+/**
+ * Displays the welcome screen of the health app step detector.
+ *
+ * This screen presents user details, step counter, exercise sessions, and various user options.
+ * It also handles permission requests and initializes step detection services.
+ *
+ * @param userName The name of the currently logged-in user.
+ * @param navController Navigation controller for app navigation.
+ * @param context The current context.
+ * @param fromNotification Boolean indicating if this screen was launched from a notification.
+ */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun WelcomeScreen(userName: String, navController: NavController, context: Context,fromNotification: Boolean) {
@@ -120,18 +129,12 @@ fun WelcomeScreen(userName: String, navController: NavController, context: Conte
     val loadedUserData = readUserDetailsFromExcel(userName, context)
     val updatedUserData = loadedUserData ?: UserData(userName, 0, "Chair Squats", "None", "Low",lastLogin = getFormattedDate())
     val loadDataTrigger = remember { mutableStateOf(false) }
-
-
-
-
-    val activity = LocalContext.current as? Activity
     val requestPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) {
             Log.d("WelcomeScreen", "BODY_SENSORS_BACKGROUND permission granted")
             startStepDetectorService(context)
         } else {
             Log.d("WelcomeScreen", "BODY_SENSORS_BACKGROUND permission denied")
-            // Permission is denied. Handle the permission denial.
         }
     }
     LaunchedEffect(loadDataTrigger.value) {
@@ -143,11 +146,8 @@ fun WelcomeScreen(userName: String, navController: NavController, context: Conte
             incrementBreaksValue(userName, context)
             checkAndUpdateBreaks(context, userName)
             refreshUserData(userName, context, userDetailsState, coroutineScope)
-
-
         }
     }
-
     val yesPendingIntent =
         createYesPendingIntent(context,userName)
     val noPendingIntent =
@@ -181,7 +181,6 @@ fun WelcomeScreen(userName: String, navController: NavController, context: Conte
                     }
                     else -> {
                         Log.d("Notification", "Unexpected action: ${it.action}")
-                        // Handle unexpected action
                     }
                 }
             }
@@ -256,10 +255,7 @@ fun WelcomeScreen(userName: String, navController: NavController, context: Conte
             context.unregisterReceiver(notificationReceiver)
         }
     }
-
-
-
-    LaunchedEffect(userName) {
+     LaunchedEffect(userName) {
         requestActivityRecognitionPermission(context)
         exerciseSessions.value = readExerciseSessionsFromCSV(context)
         loadDataTrigger.value = !loadDataTrigger.value
@@ -287,8 +283,6 @@ fun WelcomeScreen(userName: String, navController: NavController, context: Conte
             context?.let { ctx ->
                 val sharedPreferences = ctx.getSharedPreferences("UserBreaks", Context.MODE_PRIVATE)
                 val breaks = sharedPreferences.getInt("$userName-breaks", 0)
-                //checkAndUpdateBreaks(ctx, userName)
-               // refreshUserData(userName, ctx, userDetailsState, coroutineScope)
                 updatedUserData.breaks = breaks
                 withContext(Dispatchers.Main) {
                     userDetailsState.value = updatedUserData
@@ -303,8 +297,6 @@ fun WelcomeScreen(userName: String, navController: NavController, context: Conte
             delay(60000) // Delay for 1 minute
         }
     }
-
-    val selectedChip = remember { mutableStateOf(0) }
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -438,35 +430,28 @@ fun WelcomeScreen(userName: String, navController: NavController, context: Conte
     }
 }
 
-
+/**
+ * Starts the step detector service.
+ *
+ * This function initiates the StepDetectorService to track steps in the background.
+ *
+ * @param context The current context used to start the service.
+ */
 
 fun startStepDetectorService(context: Context) {
     val serviceIntent = Intent(context, StepDetectorService::class.java)
     ContextCompat.startForegroundService(context, serviceIntent)
 }
-private fun isStepDetectorServiceRunning(context: Context): Boolean {
-    val sharedPreferences = context.getSharedPreferences("ServicePrefs", Context.MODE_PRIVATE)
-    return sharedPreferences.getBoolean("StepDetectorServiceRunning", false)
-}
-private fun requestActivityRecognitionPermission(context: Context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        if (checkSelfPermission(context, "android.permission.ACTIVITY_RECOGNITION") != PackageManager.PERMISSION_GRANTED ||
-            checkSelfPermission(context, PERMISSION_POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // Request the permissions
-            ActivityCompat.requestPermissions(
-                context as Activity,
-                arrayOf(
-                    "android.permission.ACTIVITY_RECOGNITION",
-                    PERMISSION_POST_NOTIFICATIONS
-                ),
-                ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE
-            )
-        }
-    }
-}
-
-
+/**
+ * Reads user details from an Excel file and returns a UserData object.
+ *
+ * This function opens an Excel file, reads the details for a specific user, and constructs a UserData object.
+ * It returns `null` if the user is not found or in case of an error.
+ *
+ * @param userName The username to look up in the Excel file.
+ * @param context The current context, used to access application assets.
+ * @return A UserData object containing the user's details, or null if not found.
+ */
 private fun readUserDetailsFromExcel(userName: String, context: Context): UserData? {
     val fileName = "user_data.csv.xlsx"
     val internalStorageFolderPath = context.filesDir.absolutePath + "/DataClasses/"
@@ -523,6 +508,17 @@ private fun readUserDetailsFromExcel(userName: String, context: Context): UserDa
         null
     }
 }
+/**
+ * Copies a file from the application's assets to the internal storage.
+ *
+ * This function is typically used to copy a file from the app's assets directory to a location
+ * in the internal storage where it can be modified or accessed more easily.
+ * If the file already exists in the destination, it will not be copied again.
+ *
+ * @param context The current context used to access the application's assets.
+ * @param assetFileName The name of the file in the assets directory to be copied.
+ * @param destinationFilePath The file path in the internal storage where the file will be copied to.
+ */
 private fun copyFileToDestination(context: Context, assetFileName: String, destinationFilePath: String) {
     try {
         val destinationFile = File(destinationFilePath)
@@ -546,7 +542,15 @@ private fun copyFileToDestination(context: Context, assetFileName: String, desti
         println("Error copying file from assets to internal storage: $e")
     }
 }
-
+/**
+ * Increments the break count for a given user in shared preferences and updates the Excel file.
+ *
+ * The function checks if the current date is different from the last recorded date and resets the count if necessary.
+ * It then increments the count, updates the shared preferences, and writes the new data to the Excel file.
+ *
+ * @param userName The name of the user for whom to increment the break count.
+ * @param context The current context.
+ */
 private fun incrementBreaksValue(userName: String, context: Context?) {
     context?.let { ctx ->
         val sharedPreferences = ctx.getSharedPreferences("UserBreaks", Context.MODE_PRIVATE)
@@ -577,7 +581,17 @@ private fun incrementBreaksValue(userName: String, context: Context?) {
         }
     } ?: Log.e("incrementBreaksValue", "Context is null")
 }
-
+/**
+ * Writes updated user details to an Excel file.
+ *
+ * This function updates or creates a row in the Excel file for a specific user with the provided details,
+ * including break count, last exercise performed, and other user-specific data.
+ *
+ * @param userName The name of the user whose details are being updated.
+ * @param newBreaks The updated number of breaks taken by the user.
+ * @param lastExercisePerformed The name of the last exercise performed by the user.
+ * @param context The current context used to access application assets.
+ */
 private fun writeUserDetailsToExcel(
     userName: String,
     newBreaks: Int,
@@ -608,7 +622,7 @@ private fun writeUserDetailsToExcel(
         val userRowNumber = findRowNumberForUsername(userName, context) ?: sheet.physicalNumberOfRows
         val row = sheet.getRow(userRowNumber) ?: sheet.createRow(userRowNumber)
 
-        // Create or update cells for the user data
+
         val nameCell = row.createCell(0)
         nameCell.setCellValue(userName)
 
@@ -635,7 +649,16 @@ private fun writeUserDetailsToExcel(
         Log.e("ExcelUpdate", "Error updating Excel file", e)
     }
 }
-
+/**
+ * Finds the row number in the Excel file that corresponds to the specified username.
+ *
+ * This function scans the Excel file to find a user's row based on their username.
+ * It is used to locate where to update user-specific data in the file.
+ *
+ * @param userName The username for which to find the corresponding row number.
+ * @param context The current context used to access application assets.
+ * @return The row number where the user's data is located, or null if the user is not found.
+ */
 private fun findRowNumberForUsername(userName: String, context: Context): Int? {
     val fileName = "user_data.xlsx" // Updated to a more standard file name
     val internalStorageFolderPath = context.filesDir.absolutePath + "/DataClasses/"
@@ -671,6 +694,17 @@ private fun findRowNumberForUsername(userName: String, context: Context): Int? {
     }
     return null
 }
+/**
+ * Refreshes the user data state based on updated information.
+ *
+ * This coroutine function fetches the most recent user data, including step count, exercise sessions,
+ * and break count, and updates the UI state accordingly. It reads data from both the Excel file and Shared Preferences.
+ *
+ * @param userName The name of the user whose data is being refreshed.
+ * @param context The current context.
+ * @param userDetailsState The MutableState object to be updated with the latest user data.
+ * @param coroutineScope The CoroutineScope in which to launch asynchronous tasks.
+ */
 fun refreshUserData(
     userName: String,
     context: Context,
@@ -711,7 +745,112 @@ fun refreshUserData(
         }
     }
 }
+/**
+ * Checks and updates the break count for a user. Resets the count if a new day starts.
+ *
+ * @param context Context to access shared preferences.
+ * @param userName Username for which to check and update breaks.
+ */
+private fun checkAndUpdateBreaks(context: Context, userName: String) {
+    val sharedPreferences = context.getSharedPreferences("UserBreaks", Context.MODE_PRIVATE)
+    val lastBreakDate = sharedPreferences.getString("$userName-date", null) ?: getFormattedDate()
 
+    // Retrieve the last exercise performed
+    val lastExerciseSession = findMostRecentExerciseSessionForUser(userName, context)
+    val lastExercisePerformed = lastExerciseSession?.exerciseName ?: "No recent exercise"
+
+    val currentDate = getFormattedDate()
+
+    if (lastBreakDate != currentDate) {
+        // Reset breaks for the new day and update the last exercise in Excel
+        sharedPreferences.edit().apply {
+            putInt("$userName-breaks", 0)
+            putString("$userName-date", currentDate)
+            apply()
+        }
+
+        // Write the updated break count and last exercise session to Excel
+        writeUserDetailsToExcel(userName, 0, lastExercisePerformed, context)
+    } else {
+        // Update only the last exercise session to Excel without resetting the break count
+        val currentBreaks = sharedPreferences.getInt("$userName-breaks", 0)
+        Log.d("CheckUpdate", "Updated breaks for $userName: $currentBreaks")
+        writeUserDetailsToExcel(userName, currentBreaks, lastExercisePerformed, context)
+    }
+}
+/**
+ * Finds the most recent exercise session for a specified user.
+ *
+ * This function reads all exercise sessions from a CSV file and returns the latest one for the given user.
+ *
+ * @param userName The name of the user whose exercise session is to be found.
+ * @param context The current context used to access application assets.
+ * @return The most recent ExerciseSession for the user, or null if no session is found.
+ */
+fun findMostRecentExerciseSessionForUser(userName: String, context: Context): ExerciseSession? {
+    val allSessions = readExerciseSessionsFromCSV(context)
+    return allSessions.filter { it.userName == userName }
+        .maxByOrNull { it.dateTime }
+}
+/**
+ * Creates a PendingIntent for broadcasting or handling specific actions.
+ *
+ * @param context The current context.
+ * @param requestCode The request code to identify this PendingIntent.
+ * @param action The action string that this PendingIntent will handle.
+ * @return The created PendingIntent.
+ */
+fun createPendingIntent(context: Context, requestCode: Int, action: String): PendingIntent {
+    val intent = Intent(action).apply {
+        putExtra("requestCode", requestCode)
+    }
+
+    // Specify FLAG_IMMUTABLE for the PendingIntent
+    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    } else {
+        PendingIntent.FLAG_UPDATE_CURRENT
+    }
+
+    return PendingIntent.getBroadcast(
+        context,
+        requestCode,
+        intent,
+        flags
+    )
+}
+/**
+ * Creates a PendingIntent to handle the "Yes" action in notifications.
+ *
+ * When triggered, it navigates to the specified activity or screen in the app.
+ *
+ * @param context The current context.
+ * @param userName The username to be passed to the intent for further use.
+ * @return A PendingIntent configured to handle the "Yes" action.
+ */
+fun createYesPendingIntent(context: Context, userName: String): PendingIntent {
+    val yesIntent = Intent(context, NotificationActionActivity::class.java).apply {
+        action = YES_ACTION
+        putExtra("navigateTo", "exercisesWithTutorials")
+        putExtra("userName", userName) // Include the userName
+    }
+    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    } else {
+        PendingIntent.FLAG_UPDATE_CURRENT
+    }
+
+    return PendingIntent.getActivity(context, 0, yesIntent, flags)
+}
+/**
+ * Displays a notification to the user suggesting a break when no movement is detected.
+ *
+ * The notification includes actions for the user to respond.
+ *
+ * @param context The current context used for creating the notification.
+ * @param yesPendingIntent The PendingIntent to execute when the "Yes" action is selected.
+ * @param noPendingIntent The PendingIntent to execute when the "No" action is selected.
+ */
 private  fun showNoMovementNotification(
     context: Context,
     yesPendingIntent: PendingIntent,
@@ -740,45 +879,52 @@ private  fun showNoMovementNotification(
     notificationManager.notify(1, notification)
     Log.d("Notification", "Notification displayed.")
 }
-fun createPendingIntent(context: Context, requestCode: Int, action: String): PendingIntent {
-    val intent = Intent(action).apply {
-        putExtra("requestCode", requestCode)
+/**
+ * Requests activity recognition permission from the user.
+ *
+ * This is necessary for certain versions of Android to allow the app to track physical activity.
+ *
+ * @param context The current context where the permission request will be made.
+ */
+private fun requestActivityRecognitionPermission(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (checkSelfPermission(context, "android.permission.ACTIVITY_RECOGNITION") != PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(context, PERMISSION_POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Request the permissions
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                arrayOf(
+                    "android.permission.ACTIVITY_RECOGNITION",
+                    PERMISSION_POST_NOTIFICATIONS
+                ),
+                ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE
+            )
+        }
     }
-
-    // Specify FLAG_IMMUTABLE for the PendingIntent
-    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-    }
-
-    return PendingIntent.getBroadcast(
-        context,
-        requestCode,
-        intent,
-        flags
-    )
 }
-fun createYesPendingIntent(context: Context, userName: String): PendingIntent {
-    val yesIntent = Intent(context, NotificationActionActivity::class.java).apply {
-        action = YES_ACTION
-        putExtra("navigateTo", "exercisesWithTutorials")
-        putExtra("userName", userName) // Include the userName
-    }
-    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-    }
 
-    return PendingIntent.getActivity(context, 0, yesIntent, flags)
-}
+/**
+ * Checks if the app is optimized for battery usage.
+ *
+ * Determines whether the app is on the battery optimization whitelist.
+ * Being optimized can affect background processing.
+ *
+ * @param context The current context.
+ * @return True if the app is optimized (whitelisted), false otherwise.
+ */
 
 private fun isAppOptimized(context: Context): Boolean {
     val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
     return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && powerManager.isIgnoringBatteryOptimizations(context.packageName)
 }
-
+/**
+ * Prompts the user to disable battery optimization for the app.
+ *
+ * This is important for services like step detection to work reliably in the background.
+ *
+ * @param context The current context used to display the settings screen.
+ */
 private fun promptDisableBatteryOptimization(context: Context) {
     if (!isAppOptimized(context)) {
         val intent = Intent().apply {
@@ -788,6 +934,17 @@ private fun promptDisableBatteryOptimization(context: Context) {
         context.startActivity(intent)
     }
 }
+
+/**
+ * Represents an icon used in the app's activities.
+ *
+ * This data class holds information about an activity icon including its resource ID,
+ * description, and detail type.
+ *
+ * @property iconRes The resource ID of the icon.
+ * @property contentDescription A description of the icon used for accessibility.
+ * @property detailType A type descriptor of the icon's purpose or associated activity.
+ */
 data class ActivityIcon(val iconRes: Int, val contentDescription: String, val detailType: String)
 
 // Define your data model
@@ -796,7 +953,13 @@ val activities = listOf(
     ActivityIcon(R.drawable.healthstatus, "Health Status", "healthStatus"),
     ActivityIcon(R.drawable.running, "Last Exercise", "lastExercise")
 )
-
+/**
+ * Creates a clickable icon button for different activities in the app.
+ *
+ * @param iconRes Resource ID for the icon image.
+ * @param contentDescription Text description of the icon for accessibility.
+ * @param onClick Callback function to be invoked when the icon is clicked.
+ */
 @Composable
 fun ActivityIconButton(@DrawableRes iconRes: Int, contentDescription: String, onClick: () -> Unit) {
     IconButton(onClick = onClick) {
@@ -811,47 +974,36 @@ fun ActivityIconButton(@DrawableRes iconRes: Int, contentDescription: String, on
         )
     }
 }
+/**
+ * Gets the current time in a formatted string.
+ *
+ * This function returns the current system time in "HH:mm" format.
+ *
+ * @return The current time as a formatted string.
+ */
 fun getFormattedTime(): String {
     val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     return dateFormat.format(Date())
 }
+/**
+ * Gets the current date in a formatted string.
+ *
+ * This function returns the current system date in "yyyy-MM-dd" format.
+ *
+ * @return The current date as a formatted string.
+ */
 fun getFormattedDate(): String {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return dateFormat.format(Date())
 }
-private fun checkAndUpdateBreaks(context: Context, userName: String) {
-    val sharedPreferences = context.getSharedPreferences("UserBreaks", Context.MODE_PRIVATE)
-    val lastBreakDate = sharedPreferences.getString("$userName-date", null) ?: getFormattedDate()
-
-    // Retrieve the last exercise performed
-    val lastExerciseSession = findMostRecentExerciseSessionForUser(userName, context)
-    val lastExercisePerformed = lastExerciseSession?.exerciseName ?: "No recent exercise"
-
-    val currentDate = getFormattedDate()
-
-    if (lastBreakDate != currentDate) {
-        // Reset breaks for the new day and update the last exercise in Excel
-        sharedPreferences.edit().apply {
-            putInt("$userName-breaks", 0)
-            putString("$userName-date", currentDate)
-            apply()
-        }
-
-        // Write the updated break count and last exercise session to Excel
-        writeUserDetailsToExcel(userName, 0, lastExercisePerformed, context)
-    } else {
-        // Update only the last exercise session to Excel without resetting the break count
-        val currentBreaks = sharedPreferences.getInt("$userName-breaks", 0)
-        Log.d("CheckUpdate", "Updated breaks for $userName: $currentBreaks")
-        writeUserDetailsToExcel(userName, currentBreaks, lastExercisePerformed, context)
-    }
-}
-
-fun findMostRecentExerciseSessionForUser(userName: String, context: Context): ExerciseSession? {
-    val allSessions = readExerciseSessionsFromCSV(context)
-    return allSessions.filter { it.userName == userName }
-        .maxByOrNull { it.dateTime }
-}
+/**
+ * Calculates how much time has passed since a given LocalDateTime and returns a descriptive string.
+ *
+ * Useful for displaying the elapsed time in a human-readable format.
+ *
+ * @param exerciseDateTime The date and time to calculate the elapsed time from.
+ * @return A string describing how long ago the provided date and time occurred.
+ */
 fun timeAgo(exerciseDateTime: LocalDateTime): String {
     val duration = Duration.between(exerciseDateTime, LocalDateTime.now())
     val hours = duration.toHours()

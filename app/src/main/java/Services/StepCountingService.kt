@@ -17,7 +17,12 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.healthappstepdector.R
-
+/**
+ * A service responsible for counting steps using the Step Detector sensor.
+ *
+ * This service detects steps and broadcasts events to inform the app when a step is detected.
+ * It also runs as a foreground service to ensure continued operation and provides notifications.
+ */
 class StepCountingService :  Service() {
 
     private val sensorManager by lazy {
@@ -87,12 +92,8 @@ class StepCountingService :  Service() {
         override fun onReceive(context: Context?, intent: Intent?) {
             // Log statements in the context of WelcomeScreen.kt when a step is detected
             Log.d("WelcomeScreen", "Step detected in the background!")
-            // Add any additional logic as needed
         }
-    }
-
-    // If you don't want to show a notification, provide a placeholder implementation
-    private fun createNotification(): Notification {
+    }private fun createNotification(): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,

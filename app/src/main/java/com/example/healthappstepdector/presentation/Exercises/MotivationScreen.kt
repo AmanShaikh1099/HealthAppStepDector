@@ -26,7 +26,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.healthappstepdector.R
 import kotlinx.coroutines.delay
-
+/**
+ * Composable function to display a motivation screen with suggestions to take a break.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param userName The name of the currently logged-in user.
+ */
 @Composable
 fun MotivationScreen(navController: NavController,userName: String) {
     val context = LocalContext.current
@@ -43,10 +48,12 @@ fun MotivationScreen(navController: NavController,userName: String) {
         TakeABreakSuggestion(navController,userName)
     }
 }
-
-
-
-
+/**
+ * Composable function to display a suggestion to take a break.
+ *
+ * @param navController Navigation controller for app navigation.
+ * @param userName The name of the currently logged-in user.
+ */
 @Composable
 fun TakeABreakSuggestion(navController: NavController,userName: String) {
     val text = "It is nice to have a Break"
